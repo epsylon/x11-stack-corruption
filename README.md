@@ -19,6 +19,8 @@ The XQueryKeymap() function returns a bit vector for the logical state of the ke
 
 #### Vulnerable code (example):
 
+    ventiska% vim x11-segfault.py
+
     #!/usr/bin/python
     import ctypes as ct
     from ctypes.util import find_library
@@ -28,3 +30,10 @@ The XQueryKeymap() function returns a bit vector for the logical state of the ke
     keyboard = (ct.c_char * 16)()
     print "Display:", display
     x11.XQueryKeymap(display, keyboard)
+
+    
+    ventiska% python x11-segfault.py
+
+    CT.C: <class '__main__.c_char_Array_16'>
+    Display: 131127216
+    zsh: segmentation fault (core dumped)  python x11-segfault.py
