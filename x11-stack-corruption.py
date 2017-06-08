@@ -50,8 +50,13 @@ for i in range(num+1):
         ptr_leak = keyboard_ptr.value.split(keyboard.value)[1]
         import struct
         try:
-            h = struct.unpack("hh", ptr_leak) # little endian
-            print "\n [!] struct.unpack PTR is:", h
+            le = (struct.unpack('<I', struct.pack('=I', 1))[0] == 1)
+            if le == True:
+                h = struct.unpack("<I", ptr_leak) # little endian
+                print "\n [!] struct.unpack PTR [little endian] is:", h
+            else:
+                h = struct.unpack(">I", ptr_leak) # big endian
+                print "\n [!] struct.unpack PTR [big endian] is:", h
             a = hex(id(h))
             print " [!] Memory address FOUND! -----> ", a, "\n"
             if a not in address_list:
