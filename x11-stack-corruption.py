@@ -34,27 +34,29 @@ try:
 except:
     print "\n[Error] Not a valid fuzzing factor. Aborting...\n"
     sys.exit(2)
-keyboard = (ct.c_char * num)()
-keyboard.value = "A" * num
-keyboard_ptr = cast(keyboard, ct.c_char_p)
-print "\n[+] Fuzzing example (using factor selected):\n"
-print "Num chars:", str(num)
-print "- Buffer:", keyboard.raw
-print "- PTR cast:", keyboard_ptr.value
-print "- Keyboard Map:", keyboard_ptr.value.split(keyboard.value)
-print "- PTR LEAK:", keyboard_ptr.value.split(keyboard.value)[1]
 dumped_map = []
+address_list = []
 print "\n[+] Fuzzing until: " + str(num) + "\n"
 for i in range(num+1):
     keyboard = (ct.c_char * i)()
     keyboard.value = "A" * i
     keyboard_ptr = cast(keyboard, ct.c_char_p)
     if keyboard.value is not keyboard_ptr.value:
-        print "Num chars:", str(i)
-        print "- Buffer:", keyboard.raw
-        print "- PTR cast:", keyboard_ptr.value
-        print "- Keyboard Map:", keyboard_ptr.value.split(keyboard.value)
-        print "- PTR LEAK:", keyboard_ptr.value.split(keyboard.value)[1]
+        print "Num chars:", str(i), "\n"
+        print " - Buffer:", keyboard.raw
+        print " - PTR cast:", keyboard_ptr.value
+        print " - Keyboard Map:", keyboard_ptr.value.split(keyboard.value)
+        print " - PTR LEAK:", keyboard_ptr.value.split(keyboard.value)[1]
+        ptr_leak = keyboard_ptr.value.split(keyboard.value)[1]
+        import struct
+        try:
+            h = struct.unpack("hh", ptr_leak) # little endian
+            print "\n [!] struct.unpack PTR is:", h
+            a = hex(id(h))
+            print " [!] Memory address FOUND! -----> ", a, "\n"
+            address_list.append(a)
+        except:
+            pass
         dumped_map.append(str(i)+"="+str(keyboard_ptr.value.split(keyboard.value)[1]))
         print "----"
 skip = raw_input("\n[?] Wanna skip map resume? (Y/n): ")
@@ -71,6 +73,10 @@ if skip is not "y":
     except:
         pass
 print "\n-XQueryKeyMap:", x11.XQueryKeymap
+if address_list:
+    print "\n[!] Memory addresses found:\n"
+    for a in address_list:
+        print " -", a
 sf = raw_input("\n[?] Wanna try to generate a segmentation fault (core dumped) -> THIS WILL STOP THIS TOOL? (N/y): ")
 if not sf:
     sf = "n"
