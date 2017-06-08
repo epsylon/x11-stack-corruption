@@ -54,7 +54,8 @@ for i in range(num+1):
             print "\n [!] struct.unpack PTR is:", h
             a = hex(id(h))
             print " [!] Memory address FOUND! -----> ", a, "\n"
-            address_list.append(a)
+            if a not in address_list:
+                address_list.append(a)
         except:
             pass
         dumped_map.append(str(i)+"="+str(keyboard_ptr.value.split(keyboard.value)[1]))
